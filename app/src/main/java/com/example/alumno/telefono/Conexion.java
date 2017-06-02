@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
+import java.util.List;
 
 
 /**
@@ -20,57 +20,43 @@ import java.net.URL;
 public class Conexion implements Runnable{
 
     private Handler handler;
+    private String tipo;
+    private String strUrl;
 
-    public Conexion (Handler handler)
+    private byte[] byteArray;
+
+    public Conexion (Handler handler, String strUrl, String tipo)
     {
         this.handler = handler;
-    }
-
-
-
-    public byte[] getBytesDataByGET(String strUrl) throws IOException {
-        URL url = new URL(strUrl);
-        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-
-        urlConnection.setRequestMethod("GET");
-        urlConnection.connect();
-
-        int response = urlConnection.getResponseCode();
-        Log.d("http", "Response code: " + response);
-
-        if (response == 200)
-        {
-            InputStream inputStream = urlConnection.getInputStream();
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-
-            byte[] buffer = new byte[1024];
-            int lenght = 0;
-
-            while ((lenght = inputStream.read()) != -1)
-            {
-                byteArrayOutputStream.write(buffer, 0, lenght);
-            }
-
-            inputStream.close();
-            return byteArrayOutputStream.toByteArray();
-        }
-        else
-            throw new IOException();
+        this.tipo = tipo;
+        this.strUrl = strUrl;
     }
 
     @Override
     public void run() {
 
         try {
+            this.byteArray = HttpConexion.getBytesDataByGET(strUrl);
 
             Message message = new Message();
 
-            message.arg1 = 1;
-            message.obj = getBytesDataByGET("http://imagenpng.com/wp-content/uploads/2015/03/Imagenes-Mario-Bros-PNG-1.png");
+            if (this.tipo.equals("Imagen"))
+            {
+                message.arg1 = 1;
+                //message.obj = getBytesDataByGET("http://imagenpng.com/wp-content/uploads/2015/03/Imagenes-Mario-Bros-PNG-1.png");
+                message.obj = this.byteArray;
+            }
+            if (this.tipo.equals("String"))
+            {
+                message.arg1 = 2;
+                message.obj = XmlParser.obtenerPersonas(new String(this.byteArray));
+            }
 
             this.handler.sendMessage(message);
-        } catch (IOException e) {
-            Log.d("Exception Msg", e.getMessage());
+        } catch (Exception e)
+        {
+            //Log.d("Null", "Error");
+            e.printStackTrace();
         }
 
 

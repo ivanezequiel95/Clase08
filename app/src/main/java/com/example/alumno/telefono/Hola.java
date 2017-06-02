@@ -11,9 +11,12 @@ import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.widget.ImageView;
 
+import java.util.List;
+
 public class Hola extends AppCompatActivity implements Handler.Callback{
 
     private ImageView img;
+    private List<Persona> personas;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,7 +27,7 @@ public class Hola extends AppCompatActivity implements Handler.Callback{
 
         Handler handler = new Handler(this);
 
-        Thread thread1 = new Thread(new Conexion(handler));
+        Thread thread1 = new Thread(new Conexion(handler, "http://192.168.2.117:8080/listaPersonas.xml", "String"));
 
         thread1.start();
 
@@ -48,8 +51,15 @@ public class Hola extends AppCompatActivity implements Handler.Callback{
             }catch (Exception e){
                 e.printStackTrace();
             }
-
-
+        }
+        if (msg.arg1 == 2)
+        {
+            personas = (List<Persona>) msg.obj;
+            for (Persona p:personas)
+            {
+                Log.d("Persona 1: ", p.getNombre() );
+                Log.d("Persona 1: ", Integer.toString(p.getEdad()) );
+            }
         }
 
         return true;
